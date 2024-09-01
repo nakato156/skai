@@ -1,3 +1,8 @@
 env/
-__pycache__
-cached_lm_*
+**/__pycache__
+**/cached_lm_*
+
+/nlp/gpt/my-gpt2-sentiment/checkpoint-*
+/nlp/gpt/my-gpt2-sentiment/runs
+
+/nlp/rlhf/reward_model/checkpoint-*
