@@ -12,6 +12,8 @@ from queue import Queue
 from time import sleep
 from sys import platform
 
+os.environ["JACK_NO_START_SERVER"] = 1
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="medium", help="Model to use",
@@ -80,9 +82,9 @@ def transcribir(args: argparse.Namespace, total_transcrip=False):
     os.system('clear')
 
     print("Model loaded.")
-    print("esuchando....")
     
     recorder.listen_in_background(source, record_callback, phrase_time_limit=record_timeout)
+    print("esuchando....")
 
     while True:
         try:

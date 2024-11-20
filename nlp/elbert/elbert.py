@@ -14,6 +14,9 @@ BATCH_SIZE = 8 # 16
 DATASET_PATH = '../datasets/elbert/training_es.csv'
 N_CLASES = 6
 
+MODEL_NAME = 'bert-base-multilingual-cased'
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class EmotionDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_len):
         self.text = texts
@@ -34,7 +37,7 @@ class EmotionDataset(Dataset):
             truncation=True,
             add_special_tokens=True,
             return_token_type_ids=False,
-            pad_to_max_length=True,
+            padding='max_length',
             return_attention_mask=True,
             return_tensors='pt'
         )
@@ -55,7 +58,7 @@ def data_loader(df, tokenizer, max_len, batch_size):
     return DataLoader(ds, batch_size=batch_size, num_workers=4)
 
 class BertSentimentClasifyer(nn.Module):
-    def label_to_text(label: int) -> str:
+    def label_to_text(self, label: int) -> str:
         return ("Tristeza", "Felicidad", "Amor", "Enojo", "Sorpresa")[label]
 
     def __init__(self, n_classes):
@@ -141,42 +144,44 @@ def train(save=True):
 def load_weights(path) -> BertSentimentClasifyer:
     model = BertSentimentClasifyer(N_CLASES)
     model.load_state_dict(torch.load(path))
+    model.to(device)
     return model
 
 def load_model(path) -> BertSentimentClasifyer:
+    BertSentimentClasifyer(N_CLASES)
     if path == 'default':
-        path = './models/ultimo/ElBERT.pth'
+        path = './models/v1.1/ElBERT.pth'
     return torch.load(path)
 
 def clasifySentiment(model, text: str):
+    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
     encoding = tokenizer.encode_plus(
             text,
             max_length=MAX_LEN,
             truncation=True,
             add_special_tokens=True,
             return_token_type_ids=False,
-            pad_to_max_length=True,
+            padding='max_length',
             return_attention_mask=True,
             return_tensors='pt'
         )
     input_ids = encoding['input_ids'].to(device)
     attention_mask = encoding['attention_mask'].to(device)
 
-    output = model(input_ids=input_ids, attention_mask=attention_mask)
-    _, pred = torch.max(output, dim=1)
-
+    model.eval()  # Asegúrate de que el modelo está en modo evaluación
+    with torch.no_grad():
+        output = model(input_ids=input_ids, attention_mask=attention_mask)
+        _, pred = torch.max(output, dim=1)
+    
     return pred.item()
 
 if __name__ == '__main__':
     np.random.seed(RANDOM_SEED)
     torch.manual_seed(RANDOM_SEED)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
     df = pd.read_csv(DATASET_PATH)
 
-    MODEL_NAME = 'bert-base-multilingual-cased'
     tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
 
     df_train, df_test = train_test_split(df, test_size=.2, random_state=RANDOM_SEED)
@@ -207,7 +212,7 @@ if __name__ == '__main__':
         5: "ni idea"
     }
 
-    train()
+    train(save=True)
     text = input(">>> ")
     cls = clasifySentiment(model, text)
     print(emociones[cls])

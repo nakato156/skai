@@ -48,5 +48,5 @@ class RewardModel():
 
         trainer.train()
         if save:
-            trainer.model.save_pretrained(self.output_dir+"/final")
-            self.tokenizer.save_pretrained(self.output_dir+"/final")
+            trainer.model.save_pretrained(self.output_dir+"/model")
+            self.tokenizer.save_pretrained(self.output_dir+"/model")

@@ -1,8 +1,25 @@
 env/
+logs/
+
+# models
+**/*.pth
+**/vocab.txt
+**/tokenizer.json
+
+# cache
 **/__pycache__
 **/cached_lm_*
 
+# nlp
+/nlp/llama/my-gpt2-sentiment
 /nlp/gpt/my-gpt2-sentiment/checkpoint-*
 /nlp/gpt/my-gpt2-sentiment/runs
-
 /nlp/rlhf/reward_model/checkpoint-*
+
+# rlhf
+/rlhf/models
+/rlhf/reward_model
+
+# reward_model
+/reward_model/checkpoint-*
+/reward_model/*
